@@ -29,5 +29,6 @@ body {
   height: 34px; padding: 0 10px; border: 1px solid var(--rule); border-radius: 8px;
   background: var(--sheet); color: var(--ink); font: 14px/1 var(--ui);
 }
+.hint { font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
 .check { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; cursor: pointer; }
 .check input { margin: 2px 0 0; width: 15px; height: 15px; accent-color: var(--marker); flex: none; }

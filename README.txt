@@ -20,17 +20,23 @@ WHAT YOU GET
 - Videos as MP4 (up to 720p, the most Pinterest serves on web).
 - Idea pins: every page, numbered _1, _2, _3.
 - Carousels: every image, numbered.
-- Files land in Downloads/Pinterest/<Board>/<Section>/
+- All files land in one folder, split by day:
+    Downloads/Pinterest/2026-10-07/
+    Downloads/Pinterest/2026-10-08/
+  Every pin you save on a date goes in that date's folder,
+  from any board, section or single pin.
+  The date is your computer's date when the download starts.
+  A big board download that runs past midnight stays in one folder.
 
 SETTINGS (click the toolbar icon)
-- Folder inside Downloads
+- Folder inside Downloads (the day folders go inside it)
 - File names: pin title + ID, or ID only
-- Sections as subfolders on/off
 - Hover button on/off
 
 NOTES
 - Private boards work while you are signed in to Pinterest.
-- Re-downloading a board overwrites the same files, no duplicates.
+- Saving the same pin twice on the same day overwrites it, no duplicates.
+  On a new day it saves again in that day's folder.
 - Rare videos keep sound in a separate stream. Those save as two files:
   name.mp4 (picture) and name_audio.m4a (sound).
 - After updating the extension, reload open Pinterest tabs.

@@ -1,6 +1,6 @@
 'use strict';
 
-const DEFAULTS = { root: 'Pinterest', naming: 'title', sectionFolders: true, hoverButton: true };
+const DEFAULTS = { root: 'Pinterest', naming: 'title', hoverButton: true };
 const $ = (id) => document.getElementById(id);
 const plural = (n, w) => `${Number(n || 0).toLocaleString()} ${n === 1 ? w : w + 's'}`;
 
@@ -23,20 +23,30 @@ function setCtx(title, sub, buttonLabel, onClick) {
   }
 }
 
+function todayStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+function showRootHint(root) {
+  $('rootHint').textContent = `Today’s pins go to Downloads/${root}/${todayStamp()}/`;
+}
+
 async function loadSettings() {
   const s = await chrome.storage.sync.get(DEFAULTS);
   $('root').value = s.root;
+  showRootHint(cleanRoot(s.root));
   $('naming').value = s.naming;
-  $('sectionFolders').checked = s.sectionFolders;
   $('hoverButton').checked = s.hoverButton;
 
   $('root').addEventListener('change', () => {
     const v = cleanRoot($('root').value);
     $('root').value = v;
+    showRootHint(v);
     chrome.storage.sync.set({ root: v });
   });
   $('naming').addEventListener('change', () => chrome.storage.sync.set({ naming: $('naming').value }));
-  $('sectionFolders').addEventListener('change', () => chrome.storage.sync.set({ sectionFolders: $('sectionFolders').checked }));
   $('hoverButton').addEventListener('change', () => chrome.storage.sync.set({ hoverButton: $('hoverButton').checked }));
   $('settings').addEventListener('submit', (e) => e.preventDefault());
 }

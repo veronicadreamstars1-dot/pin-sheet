@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Pin Sheet",
   "short_name": "Pin Sheet",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Download pins and whole boards from Pinterest, including videos and GIFs. Pick the pins you want or save the full board.",
   "minimum_chrome_version": "116",
   "permissions": ["downloads", "downloads.ui", "storage", "contextMenus"],

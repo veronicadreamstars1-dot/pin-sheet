@@ -5,7 +5,7 @@
   globalThis.__pinSheetLoaded = true;
 
   const M = globalThis.PinMedia;
-  const DEFAULTS = { root: 'Pinterest', naming: 'title', sectionFolders: true, hoverButton: true };
+  const DEFAULTS = { root: 'Pinterest', naming: 'title', hoverButton: true };
   let settings = { ...DEFAULTS };
 
   /* ================= helpers ================= */
@@ -75,6 +75,16 @@
   function dirPath(...parts) {
     const all = rootParts().concat(parts.map((p) => M.cleanPart(p)).filter(Boolean));
     return (all.length ? all : ['Pinterest']).join('/');
+  }
+  // Today's date on this computer, as YYYY-MM-DD (sorts in date order).
+  function todayStamp() {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+  // Every download goes to one folder per day: Downloads/<root>/<YYYY-MM-DD>/
+  function dayDir() {
+    return dirPath(todayStamp());
   }
 
   /* ================= Pinterest data ================= */
@@ -488,7 +498,7 @@
   }
 
   function singlesDir() {
-    return current.board ? dirPath(current.board.name) : dirPath('Single pins');
+    return dayDir();
   }
 
   async function downloadPin(id) {
@@ -872,11 +882,9 @@
     s.result = null;
     s.els.sheet.classList.add('busy');
     s.els.errors.hidden = true;
-    const boardName = s.info.name;
-    const entries = chosen.map((p) => ({
-      pin: p.raw,
-      dir: dirPath(boardName, settings.sectionFolders && p.section ? sectionTitle(s, p.section) : ''),
-    }));
+    // The whole batch goes into one day folder, even if it runs past midnight.
+    s.dir = dayDir();
+    const entries = chosen.map((p) => ({ pin: p.raw, dir: s.dir }));
     showProgress(s, `Preparing ${plural(chosen.length, 'pin')}…`, 0);
     const { items, missing } = await prepare(entries,
       (n) => { if (!s.closed) showProgress(s, `Preparing ${n.toLocaleString()} of ${chosen.length.toLocaleString()} pins…`, 0.04 * (n / chosen.length)); },
@@ -907,7 +915,7 @@
   function finishPicker(s, res) {
     s.busy = false;
     s.jobId = null;
-    const folder = `Downloads/${dirPath(s.info ? s.info.name : '')}`;
+    const folder = `Downloads/${s.dir || dayDir()}`;
     const canShow = res.lastDownloadId !== null && res.lastDownloadId !== undefined && res.done > 0;
     let text;
     if (res.cancelled) text = res.done ? `Stopped. ${plural(res.done, 'file')} saved.` : 'Download stopped.';
