@@ -317,16 +317,20 @@
   function hideToast() { toast.hidden = true; }
 
   /* ----- hover button on pins ----- */
-  const hoverBtn = h('button', { class: 'hover-dl', type: 'button', hidden: true, 'aria-label': 'Download pin', title: 'Download pin' });
+  // Sits right under Pinterest's own Save button, which is 12px in from the corner and 48px tall.
+  const hoverBtn = h('button', { class: 'hover-dl', type: 'button', hidden: true });
   layer.append(hoverBtn);
   const pinStates = new Map();
   let hoverId = null;
   let hoverHideTimer = null;
+  const HOVER_LABELS = { idle: 'Download', busy: 'Saving…', done: 'Saved', error: 'Try again' };
 
   function paintHover() {
     const state = pinStates.get(hoverId) || 'idle';
     hoverBtn.dataset.state = state;
-    hoverBtn.replaceChildren(state === 'busy' ? h('span', { class: 'spin' }) : state === 'done' ? icon('check', 18) : state === 'error' ? icon('alert', 18) : icon('down', 18));
+    const lead = state === 'busy' ? h('span', { class: 'spin' }) : state === 'done' ? icon('check', 18) : state === 'error' ? icon('alert', 18) : icon('down', 18);
+    hoverBtn.replaceChildren(lead, h('span', { text: HOVER_LABELS[state] }));
+    hoverBtn.setAttribute('aria-label', state === 'idle' ? 'Download this pin' : HOVER_LABELS[state]);
   }
   function setPinState(id, state) {
     pinStates.set(id, state);
@@ -342,10 +346,30 @@
     hoverHideTimer = setTimeout(hideHover, 180);
   }
 
-  document.addEventListener('mouseover', (e) => {
-    if (!settings.hoverButton || picker) return;
-    if (e.target === host) { clearTimeout(hoverHideTimer); return; }
-    const t = e.target;
+  document.addEventListener('mouseover', (e) => evaluateHover(e.target), true);
+
+  // After a scroll the cursor sits over a new pin without crossing into it, so look again where it rests.
+  let lastPoint = null;
+  let moveQueued = false;
+  let scrollTimer = null;
+  function lookUnderCursor() {
+    if (lastPoint) evaluateHover(document.elementFromPoint(lastPoint.x, lastPoint.y));
+  }
+  document.addEventListener('mousemove', (e) => {
+    lastPoint = { x: e.clientX, y: e.clientY };
+    if (!hoverBtn.hidden || moveQueued) return;
+    moveQueued = true;
+    requestAnimationFrame(() => { moveQueued = false; if (hoverBtn.hidden) lookUnderCursor(); });
+  }, { passive: true, capture: true });
+  window.addEventListener('scroll', () => {
+    if (!hoverBtn.hidden) hideHover();
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(lookUnderCursor, 150);
+  }, { passive: true, capture: true });
+
+  function evaluateHover(t) {
+    if (!settings.hoverButton || picker || !t) return;
+    if (t === host) { clearTimeout(hoverHideTimer); return; }
     if (!(t instanceof Element)) return;
     const card = t.closest('[data-grid-item], [data-test-id="pinWrapper"]');
     const link = t.closest('a[href*="/pin/"]') || (card && card.querySelector('a[href*="/pin/"]'));
@@ -355,15 +379,17 @@
     if (box.width < 90 || box.height < 90) { scheduleHoverHide(); return; }
     clearTimeout(hoverHideTimer);
     hoverId = id;
-    const size = 36;
-    const left = Math.max(4, Math.min(window.innerWidth - size - 4, box.left + 10));
-    const top = Math.max(4, Math.min(window.innerHeight - size - 4, box.top + box.height / 2 - size / 2));
-    hoverBtn.style.left = `${left}px`;
-    hoverBtn.style.top = `${top}px`;
     paintHover();
     hoverBtn.hidden = false;
-  }, true);
-  window.addEventListener('scroll', () => { if (!hoverBtn.hidden) hideHover(); }, { passive: true, capture: true });
+    const w = hoverBtn.offsetWidth || 120;
+    const hgt = hoverBtn.offsetHeight || 40;
+    const inset = 12;
+    let left = box.right - inset - w;
+    if (box.width < w + inset * 2) left = box.left + (box.width - w) / 2;
+    const top = box.top + inset + 48 + 8;
+    hoverBtn.style.left = `${Math.round(Math.max(4, Math.min(window.innerWidth - w - 4, left)))}px`;
+    hoverBtn.style.top = `${Math.round(Math.max(4, Math.min(window.innerHeight - hgt - 4, top)))}px`;
+  }
   hoverBtn.addEventListener('mouseleave', scheduleHoverHide);
   hoverBtn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -983,13 +1009,16 @@ button:focus-visible { outline: 2px solid var(--marker); outline-offset: 2px; }
 .launcher .l-sub { font-weight: 400; color: #AEB7BF; }
 
 .hover-dl {
-  position: fixed; width: 36px; height: 36px; pointer-events: auto; cursor: pointer;
-  display: grid; place-items: center; border: 0; border-radius: 10px;
-  background: rgba(255, 255, 255, .95); color: var(--ink); box-shadow: 0 2px 10px rgba(0, 0, 0, .22);
+  position: fixed; height: 40px; padding: 0 16px 0 12px; pointer-events: auto; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 20px;
+  background: var(--ink); color: #fff; font: 600 14px/1 var(--ui); white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .28);
 }
-.hover-dl:hover { background: #fff; color: var(--marker); }
-.hover-dl[data-state="done"] { background: var(--marker); color: #fff; }
-.hover-dl[data-state="error"] { color: var(--bad); }
+.hover-dl svg { flex: none; color: var(--marker); }
+.hover-dl:hover { background: #31373D; }
+.hover-dl[data-state="done"] { background: var(--marker); }
+.hover-dl[data-state="done"] svg { color: #fff; }
+.hover-dl[data-state="error"] svg { color: #FF8A7A; }
 
 .toast {
   position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); pointer-events: auto;
