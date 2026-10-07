@@ -7,7 +7,7 @@ INSTALL (once)
 4. Keep this folder where it is. Chrome loads the extension from here.
 
 USE
-- Any pin: hover it, click the download button on its left edge.
+- Any pin: hover it and click "Download" (just under Pinterest's Save button).
 - Pin page: click "Download pin" at the bottom of the screen.
 - Board or section: click "Download board". A picker opens.
     Click pins to pick them. Shift-click picks a range.
