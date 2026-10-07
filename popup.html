@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pin Sheet</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <img src="icons/icon32.png" width="22" height="22" alt="">
+    <h1>Pin Sheet</h1>
+  </header>
+
+  <section class="ctx" aria-live="polite">
+    <p class="ctx-title" id="ctxTitle">Checking this tab…</p>
+    <p class="ctx-sub" id="ctxSub"></p>
+    <button id="ctxBtn" class="primary" type="button" hidden></button>
+  </section>
+
+  <form class="settings" id="settings" autocomplete="off">
+    <label class="field">
+      <span>Folder inside Downloads</span>
+      <input id="root" type="text" spellcheck="false" placeholder="Pinterest">
+    </label>
+    <label class="field">
+      <span>File names</span>
+      <select id="naming">
+        <option value="title">Pin title and ID</option>
+        <option value="id">Pin ID only</option>
+      </select>
+    </label>
+    <label class="check">
+      <input id="sectionFolders" type="checkbox">
+      <span>Save board sections in their own folders</span>
+    </label>
+    <label class="check">
+      <input id="hoverButton" type="checkbox">
+      <span>Show a download button when I hover a pin</span>
+    </label>
+  </form>
+
+  <script src="popup.js"></script>
+</body>
+</html>
